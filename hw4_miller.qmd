@@ -2,6 +2,7 @@
 title: "hw4"
 author: "Aaron Miller"
 format: html
+html: 
 ---
 
 This is a test :)
