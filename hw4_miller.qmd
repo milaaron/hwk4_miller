@@ -2,7 +2,8 @@
 title: "hw4"
 author: "Aaron Miller"
 format: html
-html: 
+html:
+  embed_resources: true
 ---
 
 This is a test :)
