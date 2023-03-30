@@ -5,5 +5,73 @@ format: html
 html:
   embed_resources: true
 ---
+```{r}
+#| message: false
+library(RedditExtractoR)
+library(tidytext)
+library(tidyverse)
+```
 
-This is a test :)
+
+# Q1 : Top (Content) Words in Conlang Subreddit
+```{r}
+top_urls <- find_thread_urls(subreddit = 'Avatar')
+
+top_urls
+```
+
+```{r}
+tidy_urls <- top_urls %>% 
+  select(title, text, url) %>% 
+  mutate(id = row_number(), short_title = substr(title, 1, 20)) %>% 
+  select(id, short_title, text) %>% 
+  unnest_tokens(word, text, token = 'words')
+
+```
+
+```{r}
+tidy_urls <- tidy_urls %>% 
+  anti_join(get_stopwords())
+
+tidy_urls %>% 
+  count(word, sort = TRUE)
+```
+
+```{r}
+tidy_urls %>% 
+  count(word, sort = TRUE) %>% 
+  top_n(20, n) %>% 
+  ggplot(aes(x=n, y=reorder(word, n)))+
+  geom_col(show.legend = FALSE)+
+  labs(title = 'Most Frequent Words/Morphemes under r/Avatar',
+       x = NULL,
+       y = 'count')+
+  theme_minimal()
+```
+
+
+#Q2: Comments of a Particular Reddit user
+```{r}
+user <- tibble(json = get_user_content('Iasper'))
+
+user %>% 
+  unnest_wider(json) %>% 
+  unnest_wider(comments) %>% 
+  unnest_longer(comment) %>% 
+  select(comment) %>% 
+  unnest_tokens(word, comment, token = 'words') %>% 
+  anti_join(get_stopwords()) %>% 
+  count(word, sort = TRUE) %>% 
+  top_n(20, n) %>% 
+  ggplot(aes(x=n, y=reorder(word, n)))+
+  geom_col(show.legend = FALSE)+
+  labs(title = 'Most Frequent Words/Morphemes by u/Iasper',
+       x = NULL,
+       y = 'count')+
+  theme_minimal()
+
+
+#??nat_geo_user 
+#str(nat_geo_user[[user]]$about)
+```
+
