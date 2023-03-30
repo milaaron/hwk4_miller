@@ -50,7 +50,15 @@ tidy_urls %>%
 ```
 
 ```{r}
+#| error: false
 top_urls <- tibble(json = find_thread_urls('Avatar'))
+
+write_rds(top_urls, 'top_urls.rds')
+```
+
+
+```{r}
+top_urls <- read_rds('top_urls.rds')
 
 top_urls %>% 
   unnest_wider(json, names_sep = '_') %>% 
@@ -72,13 +80,46 @@ top_urls %>%
 
 #Q2: Comments of a Particular Reddit user
 ```{r}
+#| error: false
 user <- tibble(json = get_user_content('Iasper'))
+
+write_rds(user, 'user.rds')
+
+```
+
+
+```{r}
+user <- read_rds('user.rds')
+
+
+my_comments <- user %>% 
+  unnest_wider(json) %>% 
+  unnest_wider(comments) %>% 
+  select(comment)
+
 
 user %>% 
   unnest_wider(json) %>% 
-  unnest_wider(comments, sep_names = '_') %>% 
-  unnest_longer(comment) %>% 
+  unnest_wider(comments) %>% 
+  select(thread_title) %>% 
+  unnest_longer(thread_title) %>% 
+  unnest_tokens(word, thread_title, token = 'words') %>% 
+  anti_join(get_stopwords()) %>% 
+  count(word, sort = TRUE) %>% 
+  top_n(20, n) %>% 
+  ggplot(aes(x=n, y=reorder(word, n)))+
+  geom_col(show.legend = FALSE)+
+  labs(title = 'Most Frequent Words/Morphemes by u/Iasper in thread_title',
+       x = NULL,
+       y = 'count')+
+  theme_minimal()
+
+
+user %>%
+  unnest_wider(json) %>% 
+  unnest_wider(comments) %>% 
   select(comment) %>% 
+  unnest_longer(comment) %>% 
   unnest_tokens(word, comment, token = 'words') %>% 
   anti_join(get_stopwords()) %>% 
   count(word, sort = TRUE) %>% 
