@@ -14,13 +14,13 @@ library(tidyverse)
 
 
 # Q1 : Top (Content) Words in Conlang Subreddit
-```{r}
+```
 top_urls <- find_thread_urls(subreddit = 'Avatar')
 
 top_urls
 ```
 
-```{r}
+```
 tidy_urls <- top_urls %>% 
   select(title, text, url) %>% 
   mutate(id = row_number(), short_title = substr(title, 1, 20)) %>% 
@@ -29,7 +29,7 @@ tidy_urls <- top_urls %>%
 
 ```
 
-```{r}
+```
 tidy_urls <- tidy_urls %>% 
   anti_join(get_stopwords())
 
@@ -37,7 +37,7 @@ tidy_urls %>%
   count(word, sort = TRUE)
 ```
 
-```{r}
+```
 tidy_urls %>% 
   count(word, sort = TRUE) %>% 
   top_n(20, n) %>% 
@@ -49,6 +49,26 @@ tidy_urls %>%
   theme_minimal()
 ```
 
+```{r}
+top_urls <- tibble(json = find_thread_urls('Avatar'))
+
+top_urls %>% 
+  unnest_wider(json, names_sep = '_') %>% 
+  unnest_wider(json_title, names_sep = '_') %>% 
+  select(json_title_1) %>% 
+  unnest_tokens(word, json_title_1, token = 'words') %>% 
+  anti_join(get_stopwords()) %>% 
+  count(word, sort = TRUE) %>% 
+  top_n(20, n) %>% 
+  ggplot(aes(x=n, y=reorder(word, n)))+
+  geom_col(show.legend = FALSE)+
+  labs(title = 'Most Frequent Words/Morphemes by u/Iasper',
+       x = NULL,
+       y = 'count')+
+  theme_minimal()
+```
+
+
 
 #Q2: Comments of a Particular Reddit user
 ```{r}
@@ -56,7 +76,7 @@ user <- tibble(json = get_user_content('Iasper'))
 
 user %>% 
   unnest_wider(json) %>% 
-  unnest_wider(comments) %>% 
+  unnest_wider(comments, sep_names = '_') %>% 
   unnest_longer(comment) %>% 
   select(comment) %>% 
   unnest_tokens(word, comment, token = 'words') %>% 
