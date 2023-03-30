@@ -13,7 +13,7 @@ library(tidyverse)
 ```
 
 
-# Q1 : Top (Content) Words in Conlang Subreddit
+# Q1 : Top (Content) Words in Avatar Subreddit
 ```
 top_urls <- find_thread_urls(subreddit = 'Avatar')
 
